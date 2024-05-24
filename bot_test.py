@@ -1,14 +1,13 @@
 from telegram import Bot, Update
-from telegram.ext import Application, CallbackContext
+from telegram.ext import Application, CommandHandler, CallbackContext
 import schedule
 import time
+from datetime import datetime
 import threading
 import asyncio
-from datetime import datetime
-import os
 
 # Токен вашего бота
-TOKEN = os.getenv('TOKEN')
+TOKEN = '7023472542:AAG8pH1kznqySo77CPGJo-xg-K1LAGGhPMQ'
 
 # Списки сотрудников
 morning_shift1 = ['@vgxasc', '@unnamedT_T', '@IoannQuaker', '@neffertity81', '@galina_zh_86', '@Liubovalove', '@watashiwadare', '@NatalyaPark', '@Tanya_Y_2707', '@dzamila0505', '@SmirnIrina', '@angelina_elhova', '@EG06081986', '@ArishaV8', '@irinaa_0810', '@Zoyahka', '@IkyokoI']
@@ -26,17 +25,11 @@ CHAT_ID = -1001477285933  # Ваш chat_id
 
 bot = Bot(token=TOKEN)
 
-# Увеличение тайм-аута и размера пула соединений
-request_kwargs = {
-    "pool_timeout": 10.0,  # Увеличенный тайм-аут пула соединений
-    "pool_size": 20,       # Увеличенный размер пула соединений
-}
-
 async def send_morning_message(context: CallbackContext):
-    today = datetime.now().day
-    if today in dates_shift1:
+    сегодня = datetime.now().day
+    if сегодня in dates_shift1:
         morning_workers = morning_shift1
-    elif today in dates_shift2:
+    elif сегодня in dates_shift2:
         morning_workers = morning_shift2
     else:
         return
@@ -45,10 +38,10 @@ async def send_morning_message(context: CallbackContext):
     await context.bot.send_message(chat_id=CHAT_ID, text=morning_message)
 
 async def send_evening_message(context: CallbackContext):
-    today = datetime.now().day
-    if today in dates_shift1:
+    сегодня = datetime.now().day
+    if сегодня in dates_shift1:
         evening_workers = evening_shift1
-    elif сегодня в dates_shift2:
+    elif сегодня in dates_shift2:
         evening_workers = evening_shift2
     else:
         return
@@ -57,10 +50,10 @@ async def send_evening_message(context: CallbackContext):
     await context.bot.send_message(chat_id=CHAT_ID, text=evening_message)
 
 async def check_likes(context: CallbackContext):
-    today = datetime.now().day
-    if today в dates_shift1:
+    сегодня = datetime.now().day
+    if сегодня in dates_shift1:
         workers = morning_shift1 + evening_shift1
-    elif сегодня в dates_shift2:
+    elif сегодня in dates_shift2:
         workers = morning_shift2 + evening_shift2
     else:
         return
@@ -76,11 +69,10 @@ async def check_likes(context: CallbackContext):
     if last_message:
         # Получение списка пользователей, которые поставили лайк
         liked_users = set()
-        # Предполагается, что у сообщения будут реакции (это может зависеть от используемой версии API Telegram)
-        if hasattr(last_message, 'reactions'):
-            for reaction в last_message.reactions:
+        if last_message.reactions:
+            for reaction in last_message.reactions:
                 if reaction.emoji == '👍':
-                    liked_users.update([user.username for user в reaction.users])
+                    liked_users.update([user.username for user in reaction.users])
 
         # Проверка, кто не поставил лайк
         for worker in workers:
@@ -93,7 +85,7 @@ def run_scheduler():
         time.sleep(1)
 
 def main():
-    application = Application.builder().token(TOKEN).request_kwargs(request_kwargs).build()
+    application = Application.builder().token(TOKEN).build()
 
     # Планировщик для отправки сообщений в заданное время
     schedule.every().day.at("07:45").do(lambda: asyncio.run(send_morning_message(CallbackContext(application))))
