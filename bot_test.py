@@ -9,6 +9,14 @@ import asyncio
 # Токен вашего бота
 TOKEN = '7023472542:AAG8pH1kznqySo77CPGJo-xg-K1LAGGhPMQ'
 
+# Настройка времени ожидания
+request_kwargs = {
+    'connect_timeout': 10,  # Увеличьте время ожидания подключения
+    'read_timeout': 20,     # Увеличьте время ожидания чтения
+}
+
+bot = Bot(token=TOKEN, request_kwargs=request_kwargs)
+
 # Списки сотрудников
 morning_shift1 = ['@vgxasc', '@unnamedT_T', '@IoannQuaker', '@neffertity81', '@galina_zh_86', '@Liubovalove', '@watashiwadare', '@NatalyaPark', '@Tanya_Y_2707', '@dzamila0505', '@SmirnIrina', '@angelina_elhova', '@EG06081986', '@ArishaV8', '@irinaa_0810', '@Zoyahka', '@IkyokoI']
 evening_shift1 = ['@Lana_chance', '@KatiSmirnova', '@ylia_stanila', '@naxlex', '@Mother_of_tears', '@psilocibinum', '@natasha97s', '@lizezika', '@gulnaramagadeeva', '@kolibri89', '@Elizaveta_Shagina', '@viktoriavergi', '@ostrome', '@elgreat', '@vikt25', '@macaronischeese', '@teebdol']
@@ -22,8 +30,6 @@ dates_shift2 = [1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29]
 
 # Идентификатор чата
 CHAT_ID = -1001477285933  # Ваш chat_id
-
-bot = Bot(token=TOKEN)
 
 async def send_morning_message(context: CallbackContext):
     сегодня = datetime.now().day
@@ -41,7 +47,7 @@ async def send_evening_message(context: CallbackContext):
     сегодня = datetime.now().day
     if сегодня in dates_shift1:
         evening_workers = evening_shift1
-    elif сегодня in dates_shift2:
+    elif сегодня в dates_shift2:
         evening_workers = evening_shift2
     else:
         return
@@ -51,9 +57,9 @@ async def send_evening_message(context: CallbackContext):
 
 async def check_likes(context: CallbackContext):
     сегодня = datetime.now().day
-    if сегодня in dates_shift1:
+    if сегодня в dates_shift1:
         workers = morning_shift1 + evening_shift1
-    elif сегодня in dates_shift2:
+    elif сегодня в dates_shift2:
         workers = morning_shift2 + evening_shift2
     else:
         return
@@ -62,7 +68,7 @@ async def check_likes(context: CallbackContext):
     updates = await context.bot.get_updates()
     last_message = None
     for update in updates:
-        if update.message and update.message.chat.id == CHAT_ID and "На смене" in update.message.text:
+        if update.message and update.message.chat.id == CHAT_ID and "На смене" в update.message.text:
             last_message = update.message
             break
 
@@ -85,7 +91,7 @@ def run_scheduler():
         time.sleep(1)
 
 def main():
-    application = Application.builder().token(TOKEN).build()
+    application = Application.builder().token(TOKEN).request_kwargs(request_kwargs).build()
 
     # Планировщик для отправки сообщений в заданное время
     schedule.every().day.at("07:45").do(lambda: asyncio.run(send_morning_message(CallbackContext(application))))
