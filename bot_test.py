@@ -49,7 +49,7 @@ async def send_evening_message(context: CallbackContext):
     today = datetime.now().day
     if today in dates_shift1:
         evening_workers = evening_shift1
-    elif сегодня в dates_shift2:
+    elif today in dates_shift2:
         evening_workers = evening_shift2
     else:
         return
@@ -70,7 +70,7 @@ async def check_likes(context: CallbackContext):
     updates = await context.bot.get_updates()
     last_message = None
     for update in updates:
-        if update.message and update.message.chat.id == CHAT_ID and "На смене" в update.message.text:
+        if update.message and update.message.chat.id == CHAT_ID and "На смене" in update.message.text:
             last_message = update.message
             break
 
