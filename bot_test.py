@@ -5,12 +5,17 @@ import time
 from datetime import datetime
 import threading
 import asyncio
+import os
 
 # Токен вашего бота
 TOKEN = '7023472542:AAG8pH1kznqySo77CPGJo-xg-K1LAGGhPMQ'
 
 # Настройки прокси (замените на ваши данные)
 PROXY_URL = 'http://64.23.150.202:8081'
+
+# Установка прокси через переменные окружения
+os.environ['http_proxy'] = PROXY_URL
+os.environ['https_proxy'] = PROXY_URL
 
 # Списки сотрудников
 morning_shift1 = ['@vgxasc', '@unnamedT_T', '@IoannQuaker', '@neffertity81', '@galina_zh_86', '@Liubovalove', '@watashiwadare', '@NatalyaPark', '@Tanya_Y_2707', '@dzamila0505', '@SmirnIrina', '@angelina_elhova', '@EG06081986', '@ArishaV8', '@irinaa_0810', '@Zoyahka', '@IkyokoI']
@@ -26,12 +31,7 @@ dates_shift2 = [1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29]
 # Идентификатор чата
 CHAT_ID = -1001477285933  # Ваш chat_id
 
-# Настройки прокси
-request_kwargs = {
-    'proxy_url': PROXY_URL,
-}
-
-bot = Bot(token=TOKEN, request_kwargs=request_kwargs)
+bot = Bot(token=TOKEN)
 
 async def send_morning_message(context: CallbackContext):
     today = datetime.now().day
@@ -88,7 +88,7 @@ async def check_likes(context: CallbackContext):
                 await context.bot.send_message(chat_id=worker, text="Пожалуйста, отметься на перекличке!")
 
 def main():
-    application = Application.builder().token(TOKEN).request_kwargs(request_kwargs).build()
+    application = Application.builder().token(TOKEN).build()
 
     # Планировщик для отправки сообщений в заданное время
     schedule.every().day.at("07:45").do(lambda: application.create_task(send_morning_message(CallbackContext(application))))
