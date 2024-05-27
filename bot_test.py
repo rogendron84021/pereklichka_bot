@@ -9,20 +9,12 @@ import asyncio
 # Токен вашего бота
 TOKEN = '7023472542:AAG8pH1kznqySo77CPGJo-xg-K1LAGGhPMQ'
 
-# Настройка времени ожидания
-request_kwargs = {
-    'connect_timeout': 10,  # Увеличьте время ожидания подключения
-    'read_timeout': 20,     # Увеличьте время ожидания чтения
-}
-
-bot = Bot(token=TOKEN, request_kwargs=request_kwargs)
-
 # Списки сотрудников
-morning_shift1 = ['@vgxasc', '@unnamedT_T', '@IoannQuaker', '@neffertity81', '@galina_zh_86', '@Liubovalove', '@watashiwadare', '@NatalyaPark', '@Tanya_Y_2707', '@dzamila0505', '@SmirnIrina', '@angelina_elhova', '@EG06081986', '@ArishaV8', '@irinaa_0810', '@Zoyahka', '@IkyokoI']
-evening_shift1 = ['@Lana_chance', '@KatiSmirnova', '@ylia_stanila', '@naxlex', '@Mother_of_tears', '@psilocibinum', '@natasha97s', '@lizezika', '@gulnaramagadeeva', '@kolibri89', '@Elizaveta_Shagina', '@viktoriavergi', '@ostrome', '@elgreat', '@vikt25', '@macaronischeese', '@teebdol']
+morning_shift1 = ['test']
+evening_shift1 = ['test']
 
-morning_shift2 = ['@Vic_7toria', '@KatrinNex', '@Andrew_TM2', '@GrigoriuN', '@Evgenia_2608', '@Elina_1301', '@nadiy_asha', '@SyavkInn', '@Vitaminka005', '@Awster_gos', '@Sharshova', '@ralazar98', '@ansggar', '@EG06081986', '@galina_zh_86', '@dzamila0505', '@watashiwadare', '@IkyokoI']
-evening_shift2 = ['@fogel0607', '@Gsjobss', '@Katrin_Uriev', '@shevtssovaa', '@NikolasVB', '@smp198', '@teebdol', '@entersoad', '@samoil84', '@DIVOLAN', '@Zoyahka', '@NatalieBallack', '@tewezaaaa', '@Evgenia_2608', '@Lana_chance']
+morning_shift2 = ['test']
+evening_shift2 = ['test']
 
 # Даты смен
 dates_shift1 = [2, 3, 6, 7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31]
@@ -91,11 +83,11 @@ def run_scheduler():
         time.sleep(1)
 
 def main():
-    application = Application.builder().token(TOKEN).request_kwargs(request_kwargs).build()
+    application = Application.builder().token(TOKEN).build()
 
     # Планировщик для отправки сообщений в заданное время
     schedule.every().day.at("07:45").do(lambda: asyncio.run(send_morning_message(CallbackContext(application))))
-    schedule.every().day.at("15:45").do(lambda: asyncio.run(send_evening_message(CallbackContext(application))))
+    schedule.every().day.at("18:03").do(lambda: asyncio.run(send_evening_message(CallbackContext(application))))
     schedule.every().day.at("08:10").do(lambda: asyncio.run(check_likes(CallbackContext(application))))
     schedule.every().day.at("16:10").do(lambda: asyncio.run(check_likes(CallbackContext(application))))
 
