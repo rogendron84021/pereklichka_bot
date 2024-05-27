@@ -5,13 +5,10 @@ import schedule
 import time
 from datetime import datetime
 import asyncio
+import httpx
 
 # Прокси-сервер
 proxy_url = "http://206.189.108.135:8081"
-
-request_kwargs = {
-    'proxy_url': proxy_url
-}
 
 # Токен вашего бота
 TOKEN = '7023472542:AAG8pH1kznqySo77CPGJo-xg-K1LAGGhPMQ'
@@ -30,8 +27,9 @@ dates_shift2 = [1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29]
 # Идентификатор чата
 CHAT_ID = -1001477285933  # Ваш chat_id
 
-# Инициализация бота с использованием request_kwargs
-bot = Bot(token=TOKEN, request_kwargs=request_kwargs)
+# Функция для создания HTTP-клиента с прокси
+async def create_client():
+    return httpx.AsyncClient(proxies=proxy_url)
 
 async def send_morning_message(context: CallbackContext):
     today = datetime.now().day
@@ -93,7 +91,8 @@ def run_scheduler(application):
         time.sleep(1)
 
 def main():
-    application = Application.builder().token(TOKEN).request_kwargs(request_kwargs).build()
+    client = asyncio.run(create_client())
+    application = Application.builder().token(TOKEN).http_client(client).build()
 
     schedule.every().day.at("07:45").do(lambda: application.create_task(send_morning_message(CallbackContext(application))))
     schedule.every().day.at("15:45").do(lambda: application.create_task(send_evening_message(CallbackContext(application))))
