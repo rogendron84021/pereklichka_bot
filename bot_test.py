@@ -1,17 +1,25 @@
 import logging
-from telegram import Bot, Update
-from telegram.ext import Application, CommandHandler, CallbackContext, MessageHandler, filters
 import schedule
 import time
-from datetime import datetime
-import asyncio
+from telegram import Bot
+from telegram.ext import Application, CallbackContext
 import httpx
 
-# Прокси-сервер
-proxy_url = "http://206.189.108.135:8081"
+# Настройки логирования
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 # Токен вашего бота
-TOKEN = '7023472542:AAG8pH1kznqySo77CPGJo-xg-K1LAGGhPMQ'
+TOKEN = 'YOUR_BOT_TOKEN_HERE'
+
+# Настройки прокси
+PROXY_URL = 'http://206.189.108.135:8081'
+request_kwargs = {
+    'proxy_url': PROXY_URL,
+}
 
 # Списки сотрудников
 morning_shift1 = ['@vgxasc', '@unnamedT_T', '@IoannQuaker', '@neffertity81', '@galina_zh_86', '@Liubovalove', '@watashiwadare', '@NatalyaPark', '@Tanya_Y_2707', '@dzamila0505', '@SmirnIrina', '@angelina_elhova', '@EG06081986', '@ArishaV8', '@irinaa_0810', '@Zoyahka', '@IkyokoI']
@@ -27,12 +35,8 @@ dates_shift2 = [1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29]
 # Идентификатор чата
 CHAT_ID = -1001477285933  # Ваш chat_id
 
-# Функция для создания HTTP-клиента с прокси
-async def create_client():
-    return httpx.AsyncClient(proxies=proxy_url)
-
 async def send_morning_message(context: CallbackContext):
-    today = datetime.now().day
+    today = time.localtime().tm_mday
     if today in dates_shift1:
         morning_workers = morning_shift1
     elif today in dates_shift2:
@@ -44,7 +48,7 @@ async def send_morning_message(context: CallbackContext):
     await context.bot.send_message(chat_id=CHAT_ID, text=morning_message)
 
 async def send_evening_message(context: CallbackContext):
-    today = datetime.now().day
+    today = time.localtime().tm_mday
     if today in dates_shift1:
         evening_workers = evening_shift1
     elif today in dates_shift2:
@@ -56,7 +60,7 @@ async def send_evening_message(context: CallbackContext):
     await context.bot.send_message(chat_id=CHAT_ID, text=evening_message)
 
 async def check_likes(context: CallbackContext):
-    today = datetime.now().day
+    today = time.localtime().tm_mday
     if today in dates_shift1:
         workers = morning_shift1 + evening_shift1
     elif today in dates_shift2:
@@ -85,24 +89,19 @@ async def check_likes(context: CallbackContext):
             if worker not in liked_users:
                 await context.bot.send_message(chat_id=worker, text="Пожалуйста, отметься на перекличке!")
 
-def run_scheduler(application):
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
-
 def main():
-    client = asyncio.run(create_client())
-    application = Application.builder().token(TOKEN).http_client(client).build()
+    client = httpx.AsyncClient(proxies=PROXY_URL)
+    application = Application.builder().token(TOKEN).httpx_client(client).build()
 
+    # Планировщик для отправки сообщений в заданное время
     schedule.every().day.at("07:45").do(lambda: application.create_task(send_morning_message(CallbackContext(application))))
     schedule.every().day.at("15:45").do(lambda: application.create_task(send_evening_message(CallbackContext(application))))
     schedule.every().day.at("08:10").do(lambda: application.create_task(check_likes(CallbackContext(application))))
     schedule.every().day.at("16:10").do(lambda: application.create_task(check_likes(CallbackContext(application))))
 
-    # Запускаем планировщик в отдельном потоке
-    threading.Thread(target=run_scheduler, args=(application,), daemon=True).start()
-
-    application.run_polling()
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
 
 if __name__ == '__main__':
     main()
