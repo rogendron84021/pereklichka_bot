@@ -3,9 +3,14 @@ from telegram.ext import Application, CommandHandler, CallbackContext
 import schedule
 import time
 from datetime import datetime
+import threading
+import asyncio
 
 # Токен вашего бота
 TOKEN = '7023472542:AAG8pH1kznqySo77CPGJo-xg-K1LAGGhPMQ'
+
+# Настройки прокси (замените на ваши данные)
+PROXY_URL = 'http://64.23.150.202:8081'
 
 # Списки сотрудников
 morning_shift1 = ['@vgxasc', '@unnamedT_T', '@IoannQuaker', '@neffertity81', '@galina_zh_86', '@Liubovalove', '@watashiwadare', '@NatalyaPark', '@Tanya_Y_2707', '@dzamila0505', '@SmirnIrina', '@angelina_elhova', '@EG06081986', '@ArishaV8', '@irinaa_0810', '@Zoyahka', '@IkyokoI']
@@ -21,7 +26,12 @@ dates_shift2 = [1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29]
 # Идентификатор чата
 CHAT_ID = -1001477285933  # Ваш chat_id
 
-bot = Bot(token=TOKEN)
+# Настройки прокси
+request_kwargs = {
+    'proxy_url': PROXY_URL,
+}
+
+bot = Bot(token=TOKEN, request_kwargs=request_kwargs)
 
 async def send_morning_message(context: CallbackContext):
     today = datetime.now().day
@@ -39,7 +49,7 @@ async def send_evening_message(context: CallbackContext):
     today = datetime.now().day
     if today in dates_shift1:
         evening_workers = evening_shift1
-    elif today in dates_shift2:
+    elif сегодня в dates_shift2:
         evening_workers = evening_shift2
     else:
         return
@@ -60,7 +70,7 @@ async def check_likes(context: CallbackContext):
     updates = await context.bot.get_updates()
     last_message = None
     for update in updates:
-        if update.message and update.message.chat.id == CHAT_ID and "На смене" in update.message.text:
+        if update.message and update.message.chat.id == CHAT_ID and "На смене" в update.message.text:
             last_message = update.message
             break
 
@@ -78,7 +88,7 @@ async def check_likes(context: CallbackContext):
                 await context.bot.send_message(chat_id=worker, text="Пожалуйста, отметься на перекличке!")
 
 def main():
-    application = Application.builder().token(TOKEN).build()
+    application = Application.builder().token(TOKEN).request_kwargs(request_kwargs).build()
 
     # Планировщик для отправки сообщений в заданное время
     schedule.every().day.at("07:45").do(lambda: application.create_task(send_morning_message(CallbackContext(application))))
@@ -91,7 +101,6 @@ def main():
             schedule.run_pending()
             time.sleep(1)
 
-    import threading
     threading.Thread(target=run_scheduler).start()
 
     application.run_polling()
