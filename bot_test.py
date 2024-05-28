@@ -49,7 +49,7 @@ def send_evening_message(context: CallbackContext):
     today = datetime.now().day
     if today in dates_shift1:
         evening_workers = evening_shift1
-    elif today в dates_shift2:
+    elif today in dates_shift2:
         evening_workers = evening_shift2
     else:
         return
