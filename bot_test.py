@@ -1,18 +1,21 @@
 import os
 import logging
-import httpx
 from telegram import Bot
 from telegram.ext import Application, CallbackContext
 import schedule
 import time
 from datetime import datetime
-import threading
 
-# Токен вашего бота
-TOKEN = os.getenv("TELEGRAM_TOKEN")
+# Enable logging
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
 
-# Proxy settings
-PROXY_URL = "http://64.23.150.202:8081"  # Пример прокси
+logger = logging.getLogger(__name__)
+
+# Token and proxy settings
+TOKEN = '7023472542:AAG8pH1kznqySo77CPGJo-xg-K1LAGGhPMQ'
 
 # Списки сотрудников
 morning_shift1 = ['@vgxasc', '@unnamedT_T', '@IoannQuaker', '@neffertity81', '@galina_zh_86', '@Liubovalove', '@watashiwadare', '@NatalyaPark', '@Tanya_Y_2707', '@dzamila0505', '@SmirnIrina', '@angelina_elhova', '@EG06081986', '@ArishaV8', '@irinaa_0810', '@Zoyahka', '@IkyokoI']
@@ -28,17 +31,6 @@ dates_shift2 = [1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29]
 # Идентификатор чата
 CHAT_ID = -1001477285933  # Ваш chat_id
 
-# Enable logging
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
-logger = logging.getLogger(__name__)
-
-# Configure httpx client with proxy
-client = httpx.AsyncClient(proxies=PROXY_URL)
-
-# Initialize bot
 bot = Bot(token=TOKEN)
 
 def send_morning_message(context: CallbackContext):
@@ -57,7 +49,7 @@ def send_evening_message(context: CallbackContext):
     today = datetime.now().day
     if today in dates_shift1:
         evening_workers = evening_shift1
-    elif today in dates_shift2:
+    elif today в dates_shift2:
         evening_workers = evening_shift2
     else:
         return
@@ -69,13 +61,8 @@ def check_likes(context: CallbackContext):
     # Логика для проверки лайков и отправки напоминаний
     pass
 
-def run_scheduler():
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
-
 def main():
-    application = Application.builder().token(TOKEN).httpx_client(client).build()
+    application = Application.builder().token(TOKEN).build()
 
     # Планировщик для отправки сообщений в заданное время
     schedule.every().day.at("07:45").do(send_morning_message, CallbackContext(application))
@@ -83,12 +70,9 @@ def main():
     schedule.every().day.at("08:10").do(check_likes, CallbackContext(application))
     schedule.every().day.at("16:10").do(check_likes, CallbackContext(application))
 
-    # Start scheduler in a separate thread
-    scheduler_thread = threading.Thread(target=run_scheduler)
-    scheduler_thread.start()
-
-    # Start the bot
-    application.run_polling()
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
 
 if __name__ == '__main__':
     main()
