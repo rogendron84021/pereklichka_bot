@@ -1,6 +1,5 @@
 import os
 import logging
-import threading
 from telegram import Bot
 from telegram.ext import Application, CallbackContext
 import schedule
@@ -34,7 +33,7 @@ CHAT_ID = -1001477285933  # Ваш chat_id
 
 bot = Bot(token=TOKEN)
 
-async def send_morning_message(context: CallbackContext):
+def send_morning_message(context: CallbackContext):
     today = datetime.now().day
     if today in dates_shift1:
         morning_workers = morning_shift1
@@ -44,9 +43,9 @@ async def send_morning_message(context: CallbackContext):
         return
     
     morning_message = "На смене (08:00-16:00):\n" + "\n".join(morning_workers)
-    await context.bot.send_message(chat_id=CHAT_ID, text=morning_message)
+    context.bot.send_message(chat_id=CHAT_ID, text=morning_message)
 
-async def send_evening_message(context: CallbackContext):
+def send_evening_message(context: CallbackContext):
     today = datetime.now().day
     if today in dates_shift1:
         evening_workers = evening_shift1
@@ -56,36 +55,24 @@ async def send_evening_message(context: CallbackContext):
         return
     
     evening_message = "На смене (16:00-23:59):\n" + "\n".join(evening_workers)
-    await context.bot.send_message(chat_id=CHAT_ID, text=evening_message)
+    context.bot.send_message(chat_id=CHAT_ID, text=evening_message)
 
-async def check_likes(context: CallbackContext):
+def check_likes(context: CallbackContext):
     # Логика для проверки лайков и отправки напоминаний
     pass
-
-def run_scheduler(application):
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
 
 def main():
     application = Application.builder().token(TOKEN).build()
 
     # Планировщик для отправки сообщений в заданное время
-    schedule.every().day.at("07:45").do(
-        lambda: application.create_task(send_morning_message(CallbackContext(application))))
-    schedule.every().day.at("15:45").do(
-        lambda: application.create_task(send_evening_message(CallbackContext(application))))
-    schedule.every().day.at("08:10").do(
-        lambda: application.create_task(check_likes(CallbackContext(application))))
-    schedule.every().day.at("16:10").do(
-        lambda: application.create_task(check_likes(CallbackContext(application))))
+    schedule.every().day.at("07:45").do(send_morning_message, CallbackContext(application))
+    schedule.every().day.at("15:45").do(send_evening_message, CallbackContext(application))
+    schedule.every().day.at("08:10").do(check_likes, CallbackContext(application))
+    schedule.every().day.at("16:10").do(check_likes, CallbackContext(application))
 
-    # Start scheduler in a separate thread
-    scheduler_thread = threading.Thread(target=run_scheduler, args=(application,))
-    scheduler_thread.start()
-
-    # Start the bot
-    application.run_polling()
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
 
 if __name__ == '__main__':
     main()
